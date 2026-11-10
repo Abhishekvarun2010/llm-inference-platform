@@ -61,7 +61,7 @@ kind load docker-image llm-inference-platform:latest \
   --name llm-inference-platform
 ```
 
-The local values use `imagePullPolicy: IfNotPresent`, allowing the Kind node to use the locally loaded image.
+The local values pull the GHCR image by digest. Because the current GHCR package is private, create `ghcr-pull-secret` in the `inference` namespace before synchronizing the Application. Do not commit registry credentials to Git.
 
 ## Immutable container images
 

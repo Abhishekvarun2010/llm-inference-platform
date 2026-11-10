@@ -1,10 +1,12 @@
 replicaCount: 1
 
 image:
-  repository: llm-inference-platform
-  tag: latest
-  digest: ""
+  repository: ghcr.io/abhishekvarun2010/llm-inference-platform
+  tag: ""
+  digest: "sha256:39c46eb7faf23f890f3d3987a0b48575082f0d58887e005a66cd9ab11ca4edb3"
   pullPolicy: IfNotPresent
+  pullSecrets:
+    - name: ghcr-pull-secret
 
 inference:
   baseUrl: http://host.docker.internal:11434/v1

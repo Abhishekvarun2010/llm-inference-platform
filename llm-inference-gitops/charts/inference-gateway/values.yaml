@@ -6,6 +6,7 @@ image:
   # When set, digest takes precedence over tag and renders repository@digest.
   digest: ""
   pullPolicy: IfNotPresent
+  pullSecrets: []
 
 inference:
   baseUrl: http://host.docker.internal:11434/v1
