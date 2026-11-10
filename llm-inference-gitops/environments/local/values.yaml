@@ -8,7 +8,7 @@ image:
 inference:
   baseUrl: http://host.docker.internal:11434/v1
   apiKey: ollama
-  model: qwen3:0.6b
+  model: qwen3:8b
 
 service:
   type: NodePort
