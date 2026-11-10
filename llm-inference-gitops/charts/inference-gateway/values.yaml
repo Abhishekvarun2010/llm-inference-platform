@@ -1,8 +1,10 @@
 replicaCount: 1
 
 image:
-  repository: llm-inference-platform
+  repository: ghcr.io/abhishekvarun2010/llm-inference-platform
   tag: latest
+  # When set, digest takes precedence over tag and renders repository@digest.
+  digest: ""
   pullPolicy: IfNotPresent
 
 inference:

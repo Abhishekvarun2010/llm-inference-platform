@@ -63,6 +63,40 @@ kind load docker-image llm-inference-platform:latest \
 
 The local values use `imagePullPolicy: IfNotPresent`, allowing the Kind node to use the locally loaded image.
 
+## Immutable container images
+
+The chart supports both tag-based and digest-based image references:
+
+```yaml
+image:
+  repository: ghcr.io/abhishekvarun2010/llm-inference-platform
+  tag: latest
+  digest: ""
+```
+
+When `image.digest` is empty, Helm renders `repository:tag`. When it is set, the digest takes precedence and Helm renders the immutable `repository@sha256:...` reference.
+
+Validate digest rendering with:
+
+```bash
+helm template inference-gateway charts/inference-gateway \
+  -f environments/aws-dev/values.yaml \
+  | grep 'image:'
+```
+
+## CI/CD pipeline
+
+The workflow at `.github/workflows/ci-cd.yml`:
+
+1. Installs Poetry dependencies and runs pytest.
+2. Lints the Helm chart.
+3. Tests tag- and digest-based Helm rendering.
+4. Builds and pushes commit-SHA and `latest` image tags to GHCR on `main`.
+5. Captures the registry digest and writes it to `environments/aws-dev/values.yaml`.
+6. Commits the immutable GitOps digest back to `main`.
+
+The workflow uses `GITHUB_TOKEN` with `packages: write` and `contents: write`; no registry password secret is required.
+
 ## Install Argo CD
 
 ```bash

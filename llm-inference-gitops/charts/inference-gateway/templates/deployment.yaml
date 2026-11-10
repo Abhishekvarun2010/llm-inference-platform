@@ -1,3 +1,11 @@
+{{- $image := "" }}
+{{- if .Values.image.digest }}
+{{- $image = printf "%s@%s" .Values.image.repository .Values.image.digest }}
+{{- else if .Values.image.tag }}
+{{- $image = printf "%s:%s" .Values.image.repository .Values.image.tag }}
+{{- else }}
+{{- fail "image.tag or image.digest must be set" }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,7 +29,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ $image | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - configMapRef:

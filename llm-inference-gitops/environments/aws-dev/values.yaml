@@ -1,8 +1,9 @@
 replicaCount: 2
 
 image:
-  repository: REPLACE_WITH_ECR_REGISTRY/llm-inference-platform
-  tag: latest
+  repository: ghcr.io/abhishekvarun2010/llm-inference-platform
+  tag: ""
+  digest: "sha256:39e6401472b752a6fe6aa8c360b95aa08a7fbc5b08505942ed0588f8ca5337d7"
   pullPolicy: Always
 
 inference:
