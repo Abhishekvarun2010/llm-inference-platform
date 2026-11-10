@@ -61,9 +61,8 @@ jobs:
         run: |
           helm template inference-gateway "$CHART_PATH" \
             --namespace inference \
-            -f "$LOCAL_VALUES" \
             > /tmp/tag-rendered.yaml
-          grep -F 'image: "llm-inference-platform:latest"' /tmp/tag-rendered.yaml
+          grep -F 'image: "ghcr.io/abhishekvarun2010/llm-inference-platform:latest"' /tmp/tag-rendered.yaml
 
       - name: Render digest-based manifests
         run: |
