@@ -7,18 +7,18 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Abhishekvarun2010/llm-inference-platform.git
-    targetRevision: HEAD
-    path: charts/inference-gateway
+    targetRevision: main
+    path: llm-inference-gitops/charts/inference-gateway
     helm:
       releaseName: llm-inference-platform
       valueFiles:
         - ../../environments/local/values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: inference
   syncPolicy:
     automated:
-      prune: false
-      selfHeal: false
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
