@@ -1,0 +1,52 @@
+replicaCount: 1
+
+image:
+  repository: llm-inference-platform
+  tag: latest
+  pullPolicy: IfNotPresent
+
+inference:
+  baseUrl: http://host.docker.internal:11434/v1
+  apiKey: ollama
+  model: qwen3:0.6b
+
+service:
+  type: ClusterIP
+  port: 8000
+  nodePort: null
+
+containerPort: 8000
+
+probes:
+  readiness:
+    path: /health/ready
+    initialDelaySeconds: 3
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 6
+  liveness:
+    path: /health/live
+    initialDelaySeconds: 3
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
+  runAsUser: 100
+  runAsGroup: 101
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: RuntimeDefault

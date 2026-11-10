@@ -1,0 +1,16 @@
+replicaCount: 1
+
+image:
+  repository: llm-inference-platform
+  tag: latest
+  pullPolicy: IfNotPresent
+
+inference:
+  baseUrl: http://host.docker.internal:11434/v1
+  apiKey: ollama
+  model: qwen3:0.6b
+
+service:
+  type: NodePort
+  port: 8000
+  nodePort: 30080

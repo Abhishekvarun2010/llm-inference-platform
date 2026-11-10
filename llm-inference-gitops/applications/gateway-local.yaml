@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: inference-gateway-local
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/REPLACE_WITH_ORG/llm-inference-gitops.git
+    targetRevision: HEAD
+    path: charts/inference-gateway
+    helm:
+      releaseName: llm-inference-platform
+      valueFiles:
+        - ../../environments/local/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
