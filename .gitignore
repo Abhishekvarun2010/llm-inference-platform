@@ -24,7 +24,9 @@ ENV/
 env/
 
 # Poetry
-poetry.lock
+# poetry.lock is committed for apps (reproducible installs)
+# Uncomment the line below if this becomes a library
+# poetry.lock
 
 # IDE
 .idea/
@@ -47,3 +49,4 @@ logs/
 .coverage
 htmlcov/
 .tox/
+
