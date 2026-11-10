@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/REPLACE_WITH_ORG/llm-inference-gitops.git
+    repoURL: https://github.com/Abhishekvarun2010/llm-inference-platform.git
     targetRevision: HEAD
     path: charts/inference-gateway
     helm:
