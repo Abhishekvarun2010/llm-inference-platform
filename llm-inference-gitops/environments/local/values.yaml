@@ -2,9 +2,9 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/abhishekvarun2010/llm-inference-platform
-  tag: ""
-  digest: "sha256:39c46eb7faf23f890f3d3987a0b48575082f0d58887e005a66cd9ab11ca4edb3"
-  pullPolicy: IfNotPresent
+  tag: latest
+  digest: ""
+  pullPolicy: Always
   pullSecrets:
     - name: ghcr-pull-secret
 

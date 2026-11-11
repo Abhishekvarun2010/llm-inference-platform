@@ -61,7 +61,7 @@ kind load docker-image llm-inference-platform:latest \
   --name llm-inference-platform
 ```
 
-The local values pull the GHCR image by digest. Because the current GHCR package is private, create `ghcr-pull-secret` in the `inference` namespace before synchronizing the Application. Do not commit registry credentials to Git.
+The local values always pull the `latest` GHCR image. Because the current GHCR package is private, create `ghcr-pull-secret` in the `inference` namespace before synchronizing the Application. Do not commit registry credentials to Git. AWS-dev remains digest-pinned for immutable deployments.
 
 ## Immutable container images
 
