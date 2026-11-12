@@ -14,7 +14,7 @@ llm-inference-gitops/
 │       ├── values.yaml
 │       └── templates/
 │           ├── configmap.yaml
-│           ├── deployment.yaml
+│           ├── rollout.yaml
 │           └── service.yaml
 └── environments/
     ├── aws-dev/values.yaml
@@ -30,11 +30,47 @@ GitHub repository
   -> Argo CD Application
   -> Helm chart + local values
   -> inference namespace
-  -> NodePort Service 30080
-  -> FastAPI pod port 8000
+  -> Argo Rollout (blue-green)
+  -> active NodePort Service 30080 / preview ClusterIP Service
+  -> active or preview FastAPI pod port 8000
 ```
 
 The Kind cluster maps macOS port `8000` to node port `30080`. The pod reaches native macOS Ollama through `http://host.docker.internal:11434/v1`.
+
+## Blue-green deployment
+
+The chart renders an Argo Rollouts `Rollout` instead of a Kubernetes `Deployment`:
+
+- `llm-inference-platform` is the active Service. Locally it remains NodePort `30080`, so the promoted version is available at `http://localhost:8000`.
+- `llm-inference-platform-preview` is a ClusterIP Service that selects the candidate ReplicaSet.
+- Automatic promotion is disabled. A new candidate must become Ready and be validated before it is promoted.
+- The previous ReplicaSet is scaled down 30 seconds after promotion, and two revisions are retained for rollback history.
+
+Install the Argo Rollouts controller before synchronizing this chart:
+
+```bash
+kubectl create namespace argo-rollouts
+kubectl apply --server-side --force-conflicts -n argo-rollouts \
+  -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+kubectl rollout status deployment/argo-rollouts -n argo-rollouts --timeout=240s
+```
+
+During a rollout, expose and validate the preview Service:
+
+```bash
+kubectl port-forward -n inference service/llm-inference-platform-preview 8081:8000
+curl http://localhost:8081/health/live
+curl http://localhost:8081/health/ready
+```
+
+After validation, promote the candidate. This requires the Argo Rollouts kubectl plugin:
+
+```bash
+kubectl argo rollouts get rollout llm-inference-platform -n inference --watch
+kubectl argo rollouts promote llm-inference-platform -n inference
+```
+
+The Rollout changes only when its pod template changes. Pushing new bytes to the existing `latest` tag does not change the Git manifest and therefore does not start blue-green deployment. Use a unique image tag or, preferably, an immutable digest in Git for every release.
 
 ## Validate the chart
 
@@ -48,17 +84,6 @@ helm template inference-gateway \
   charts/inference-gateway \
   --namespace inference \
   -f environments/local/values.yaml
-```
-
-## Build and load the application image
-
-Run from the application repository root:
-
-```bash
-docker build -t llm-inference-platform:latest .
-
-kind load docker-image llm-inference-platform:latest \
-  --name llm-inference-platform
 ```
 
 The local values always pull the `latest` GHCR image. Because the current GHCR package is private, create `ghcr-pull-secret` in the `inference` namespace before synchronizing the Application. Do not commit registry credentials to Git. AWS-dev remains digest-pinned for immutable deployments.
@@ -139,22 +164,14 @@ Verify the application:
 
 ```bash
 kubectl get application inference-gateway-local -n argocd
-kubectl get all -n inference
+kubectl get rollout,replicaset,pod,service -n inference
 curl http://localhost:8000/health/live
 curl http://localhost:8000/health/ready
 ```
 
 ## Update the application
 
-For application code changes:
-
-```bash
-docker build -t llm-inference-platform:latest .
-kind load docker-image llm-inference-platform:latest --name llm-inference-platform
-kubectl rollout restart deployment/llm-inference-platform -n inference
-```
-
-For chart or environment changes, commit and push the GitOps files. Argo CD detects the new revision and synchronizes it automatically:
+For application code changes, build and push a uniquely tagged or digest-addressed image, then update the environment values in Git. For chart or environment changes, commit and push the GitOps files. Argo CD detects the new revision and synchronizes it automatically:
 
 ```bash
 git add llm-inference-gitops
@@ -168,7 +185,9 @@ git push origin main
 kubectl describe application inference-gateway-local -n argocd
 kubectl logs -n argocd deployment/argocd-repo-server
 kubectl describe pod -n inference -l app.kubernetes.io/name=inference-gateway
-kubectl logs -n inference deployment/llm-inference-platform
+kubectl describe rollout llm-inference-platform -n inference
+kubectl logs -n argo-rollouts deployment/argo-rollouts
+kubectl logs -n inference -l app.kubernetes.io/name=inference-gateway
 ```
 
 If readiness fails while liveness succeeds, verify that Ollama is running on macOS and responds at `http://localhost:11434/v1/models`.

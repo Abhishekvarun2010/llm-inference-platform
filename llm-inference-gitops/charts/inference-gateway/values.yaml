@@ -1,5 +1,14 @@
 replicaCount: 1
 
+rollout:
+  revisionHistoryLimit: 2
+  blueGreen:
+    # Keep false to require an explicit promotion after preview validation.
+    autoPromotionEnabled: false
+    autoPromotionSeconds: null
+    previewReplicaCount: 1
+    scaleDownDelaySeconds: 30
+
 image:
   repository: ghcr.io/abhishekvarun2010/llm-inference-platform
   tag: latest
@@ -14,6 +23,11 @@ inference:
   model: qwen3:0.6b
 
 service:
+  type: ClusterIP
+  port: 8000
+  nodePort: null
+
+previewService:
   type: ClusterIP
   port: 8000
   nodePort: null

@@ -1,5 +1,13 @@
 replicaCount: 1
 
+rollout:
+  revisionHistoryLimit: 2
+  blueGreen:
+    autoPromotionEnabled: false
+    autoPromotionSeconds: null
+    previewReplicaCount: 1
+    scaleDownDelaySeconds: 30
+
 image:
   repository: ghcr.io/abhishekvarun2010/llm-inference-platform
   tag: latest
@@ -17,3 +25,8 @@ service:
   type: NodePort
   port: 8000
   nodePort: 30080
+
+previewService:
+  type: ClusterIP
+  port: 8000
+  nodePort: null
