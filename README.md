@@ -2,6 +2,20 @@
 
 A FastAPI gateway that exposes an HTTP API for an Ollama-hosted language model. The application uses Ollama's OpenAI-compatible API and defaults to the `qwen3:0.6b` model.
 
+## Repository layout
+
+| Path | Responsibility |
+| --- | --- |
+| `app/` | FastAPI application code. |
+| `tests/` | Pytest unit tests. |
+| `infrastructure/terraform/network/` | AWS VPC, subnets, security groups, GitHub OIDC, and shared IAM. |
+| `infrastructure/terraform/application/` | AWS EKS, ECR, and SSM Parameter Store application infrastructure. |
+| `llm-inference-gitops/` | Helm chart, environment values, and Argo CD application definitions. |
+| `.github/workflows/application-image.yml` | Tests, builds, and publishes the immutable application image to ECR. |
+| `.github/workflows/ci-cd.yml` | Validates Python, Helm, and Terraform without publishing an image. |
+
+Infrastructure provisioning, application image production, and GitOps release promotion are intentionally separate lifecycles. See [`infrastructure/terraform/README.md`](infrastructure/terraform/README.md) for the AWS bootstrap procedure.
+
 ## API endpoints
 
 | Method | Endpoint | Purpose |

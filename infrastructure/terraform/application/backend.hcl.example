@@ -1,0 +1,7 @@
+bucket       = "llm-inference-platform-tfstate-248471876315-ap-southeast-2"
+key          = "llm-inference-platform/dev/application/terraform.tfstate"
+region       = "ap-southeast-2"
+profile      = "application-deployer"
+encrypt      = true
+use_lockfile = true
+
