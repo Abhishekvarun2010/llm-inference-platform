@@ -28,8 +28,11 @@ module "vpc" {
   create_database_subnet_group = true
   database_subnet_group_name   = "${local.name}-database"
 
-  enable_nat_gateway = true
-  single_nat_gateway = var.single_nat_gateway
+  # NAT Gateway creation is intentionally disabled for now to avoid its hourly
+  # and public IPv4 charges. Re-enable these settings when private workloads
+  # require outbound internet access.
+  enable_nat_gateway = false
+  # single_nat_gateway = var.single_nat_gateway
 
   enable_dns_hostnames = true
   enable_dns_support   = true
@@ -49,6 +52,18 @@ module "vpc" {
   }
 }
 
+# Temporary direct internet routing for the existing private-named application
+# subnets. Their names and module classification stay unchanged, but a default
+# route to the VPC internet gateway makes them public/routable. Workloads must
+# still be launched with a public IPv4 address to use this route.
+resource "aws_route" "private_subnet_internet_gateway" {
+  count = length(local.azs)
+
+  route_table_id         = module.vpc.private_route_table_ids[count.index]
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = module.vpc.igw_id
+}
+
 resource "aws_security_group" "shared_services" {
   name        = "${local.name}-shared-services"
   description = "Shared security group for application infrastructure"
@@ -64,13 +79,15 @@ resource "aws_security_group" "shared_services" {
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
-  count = var.github_oidc_provider_arn == null ? 1 : 0
+  count = var.enable_github_oidc_publisher && var.github_oidc_provider_arn == null ? 1 : 0
 
   url            = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
 }
 
 data "aws_iam_policy_document" "github_image_publisher_assume_role" {
+  count = var.enable_github_oidc_publisher ? 1 : 0
+
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -95,11 +112,15 @@ data "aws_iam_policy_document" "github_image_publisher_assume_role" {
 }
 
 resource "aws_iam_role" "github_image_publisher" {
+  count = var.enable_github_oidc_publisher ? 1 : 0
+
   name               = "${local.name}-github-image-publisher"
-  assume_role_policy = data.aws_iam_policy_document.github_image_publisher_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.github_image_publisher_assume_role[0].json
 }
 
 data "aws_iam_policy_document" "github_image_publisher" {
+  count = var.enable_github_oidc_publisher ? 1 : 0
+
   statement {
     sid       = "GetEcrAuthorizationToken"
     effect    = "Allow"
@@ -122,8 +143,10 @@ data "aws_iam_policy_document" "github_image_publisher" {
 }
 
 resource "aws_iam_role_policy" "github_image_publisher" {
+  count = var.enable_github_oidc_publisher ? 1 : 0
+
   name   = "ecr-push-${var.project_name}"
-  role   = aws_iam_role.github_image_publisher.id
-  policy = data.aws_iam_policy_document.github_image_publisher.json
+  role   = aws_iam_role.github_image_publisher[0].id
+  policy = data.aws_iam_policy_document.github_image_publisher[0].json
 }
 

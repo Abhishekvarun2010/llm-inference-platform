@@ -23,7 +23,7 @@ variable "vpc_cidr" {
 }
 
 variable "single_nat_gateway" {
-  description = "Use one NAT gateway to reduce dev cost. Set false for one NAT gateway per AZ."
+  description = "Controls NAT topology when enable_nat_gateway is re-enabled in main.tf."
   type        = bool
   default     = true
 }
@@ -51,6 +51,12 @@ variable "github_oidc_provider_arn" {
   type        = string
   default     = null
   nullable    = true
+}
+
+variable "enable_github_oidc_publisher" {
+  description = "Create the GitHub OIDC provider and ECR image-publisher role. Disabled because the new AWS experience SCP blocks OIDC provider creation."
+  type        = bool
+  default     = false
 }
 
 variable "application_deployer_trusted_principal_arns" {

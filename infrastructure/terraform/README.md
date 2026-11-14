@@ -118,7 +118,14 @@ cd infrastructure/terraform/network
 terraform output -raw github_actions_image_role_arn
 ```
 
-Create the GitHub Actions repository secret `AWS_GITHUB_ACTIONS_ROLE_ARN` with that ARN. The trust policy accepts only `main` in `Abhishekvarun2010/llm-inference-platform`, and the role can only push to this project's ECR repository.
+The new AWS experience currently blocks IAM OIDC provider creation through its
+managed service control policy, so `enable_github_oidc_publisher` defaults to
+`false` and the output is `null`. If the project later enables this capability,
+set the variable to `true`, create or supply the provider, and configure the
+GitHub Actions repository secret `AWS_GITHUB_ACTIONS_ROLE_ARN` with the output.
+The trust policy then accepts only `main` in
+`Abhishekvarun2010/llm-inference-platform`, and the role can only push to this
+project's ECR repository.
 
 The separate image workflow publishes one immutable tag per commit:
 

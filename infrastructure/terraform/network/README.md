@@ -12,8 +12,8 @@ subnets.
 
 | Tier | Availability Zone index | CIDR | Routing and purpose |
 | --- | ---: | --- | --- |
-| Private application | 0 | `10.20.0.0/20` | Outbound internet access through NAT; EKS worker nodes |
-| Private application | 1 | `10.20.16.0/20` | Outbound internet access through NAT; EKS worker nodes |
+| Private application (temporarily public-routed) | 0 | `10.20.0.0/20` | Direct route to the internet gateway; EKS worker nodes |
+| Private application (temporarily public-routed) | 1 | `10.20.16.0/20` | Direct route to the internet gateway; EKS worker nodes |
 | Public | 0 | `10.20.48.0/24` | Route to the internet gateway; public load balancers and NAT gateway |
 | Public | 1 | `10.20.49.0/24` | Route to the internet gateway; public load balancers and NAT gateway |
 | Database | 0 | `10.20.64.0/24` | No direct public route; RDS DB subnet group |
@@ -44,6 +44,13 @@ making the database subnets public.
 
 ## NAT gateway setting
 
-`single_nat_gateway = true` creates one NAT gateway for development cost
-control. Set it to `false` for one NAT gateway per Availability Zone when the
-environment requires Availability Zone-independent outbound connectivity.
+NAT Gateway creation is currently disabled in `main.tf` to avoid the NAT
+Gateway hourly charge, data-processing charge, and Elastic IP charge. The
+existing private-named application subnets temporarily use direct default
+routes to the internet gateway instead. Their names are unchanged. A workload
+in those subnets must have a public IPv4 address for internet connectivity;
+the subnet route alone does not assign one.
+
+When workloads require outbound internet access, set `enable_nat_gateway` to
+`true` and uncomment `single_nat_gateway`. A value of `true` creates one shared
+NAT gateway; `false` creates one per Availability Zone.

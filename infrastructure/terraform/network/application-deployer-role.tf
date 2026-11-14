@@ -8,6 +8,16 @@ data "aws_iam_policy_document" "application_deployer_assume_role" {
       type        = "AWS"
       identifiers = local.application_deployer_trusted_principal_arns
     }
+
+    dynamic "condition" {
+      for_each = length(var.application_deployer_trusted_principal_arns) == 0 ? [1] : []
+
+      content {
+        test     = "ArnLike"
+        variable = "aws:PrincipalArn"
+        values   = [local.managed_project_role_arn]
+      }
+    }
   }
 }
 

@@ -2,7 +2,7 @@ aws_region  = "ap-southeast-2"
 environment = "dev"
 vpc_cidr    = "10.20.0.0/16"
 
-# A single NAT gateway is cheaper for development. Use one per AZ for production.
+# Currently dormant because NAT Gateway creation is disabled in main.tf.
 single_nat_gateway = true
 
 terraform_state_bucket_name = "llm-inference-platform-tfstate-248471876315-ap-southeast-2"
@@ -13,6 +13,9 @@ application_deployer_trusted_principal_arns = []
 github_owner      = "Abhishekvarun2010"
 github_repository = "llm-inference-platform"
 github_branch     = "main"
+
+# The new AWS experience currently denies creating an IAM OIDC provider.
+enable_github_oidc_publisher = false
 
 tags = {
   Owner = "platform-team"

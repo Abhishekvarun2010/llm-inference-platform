@@ -34,8 +34,8 @@ output "shared_services_security_group_id" {
 }
 
 output "github_actions_image_role_arn" {
-  description = "Set this as the GitHub Actions secret AWS_GITHUB_ACTIONS_ROLE_ARN."
-  value       = aws_iam_role.github_image_publisher.arn
+  description = "GitHub Actions image-publisher role ARN, or null when disabled by project policy."
+  value       = try(aws_iam_role.github_image_publisher[0].arn, null)
 }
 
 output "application_deployer_role_arn" {
